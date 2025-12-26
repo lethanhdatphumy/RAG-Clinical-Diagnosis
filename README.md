@@ -15,9 +15,9 @@ An AI-powered Retrieval-Augmented Generation (RAG) system for clinical diagnosis
 ## Performance Metrics
 
 Evaluated on 14 tropical disease test cases:
-- **Diagnosis Accuracy:** 92.86% (13/14 correct)
-- **Keyword Match:** 69.29%
-- **Precision@5:** 59.52%
+- **Diagnosis Accuracy:** 100% (14/14 correct)
+- **Keyword Match:** 73.10%
+- **Precision@5:** 61.90%
 
 ## Tech Stack
 
@@ -139,11 +139,11 @@ python tests/evaluate_rag.py
 
 **Output:**
 ```
-Diagnosis Accuracy: 13/14 = 92.86%
-Keyword Match: 69.29%
-Precision@5: 59.52%
+Diagnosis Accuracy: 14/14 = 100%
+Keyword Match: 73.10%
+Precision@5: 61.90%
 
-Metrics saved to metrics.json
+Metrics saved to img.png
 ```
 
 ## Data Versioning with DVC
