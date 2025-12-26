@@ -21,15 +21,15 @@ Evaluated on 14 tropical disease test cases:
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|-----------|
-| **LLM** | Google Gemini 1.5 Flash |
+| Component | Technology                               |
+|-----------|------------------------------------------|
+| **LLM** | Google Gemini (Gemma)                    |
 | **Embeddings** | Sentence Transformers (all-MiniLM-L6-v2) |
-| **Vector Store** | FAISS |
-| **Framework** | LangChain |
-| **Data Versioning** | DVC + AWS S3 |
-| **Web Interface** | Streamlit |
-| **Evaluation** | Custom metrics framework |
+| **Vector Store** | FAISS                                    |
+| **Framework** | LangChain                                |
+| **Data Versioning** | DVC + AWS S3                             |
+| **Web Interface** | Streamlit                                |
+| **Evaluation** | Custom metrics framework                 |
 
 ## Project Structure
 ```text
