@@ -1,0 +1,161 @@
+# Environment variables and secrets
+.env*
+.env
+.env.local
+.env.*.local
+*.env
+config.ini
+secrets.json
+*.pem
+*.key
+**/config/api_keys.py
+**/config/secrets.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+*.sublime-project
+*.sublime-workspace
+
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+log/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+
+# PDF files (often large)
+*.pdf
+
+# Large model files
+*.pkl
+*.joblib
+*.bin
+*.safetensors
+*.h5
+*.onnx
+*.model
+*.pt
+*.pth
+models/
+checkpoints/
+
+# CSV and Excel files (can be large)
+*.csv
+*.xlsx
+*.xls
+
+# Compressed files
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+
+# ML/AI cache directories
+.cache/
+.huggingface/
+.transformers_cache/
+.torch/
+__pycache__/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Documentation builds
+docs/_build/
+.readthedocs.yml
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+
+# Image files (if generated during processing)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.svg
+
+# Audio/video files
+*.mp3
+*.mp4
+*.wav
+*.avi
+*.mov
+
+# Keep directory structure with .gitkeep files
+!.gitkeep
+!**/.gitkeep
+dvc.json

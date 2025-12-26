@@ -1,0 +1,6 @@
+outs:
+- md5: 6108226afc740339599687cf218ef7e4.dir
+  size: 31368421
+  nfiles: 100
+  hash: md5
+  path: case_reports

@@ -1,0 +1,32 @@
+# PDF Processing
+pymupdf==1.23.8
+Pillow==10.0.0
+
+# Google Gemini API
+google-generativeai==0.3.2
+google-ai-generativelanguage==0.4.0
+
+# LangChain
+langchain==0.1.0
+langchain-community==0.0.13
+langchain-google-genai==0.0.5
+langchain-core==0.1.10
+
+# Embeddings & Transformers (Compatible with Python 3.9)
+sentence-transformers==2.2.2
+transformers==4.30.0
+torch==2.0.1
+tokenizers==0.13.3
+
+# Vector Store
+faiss-cpu==1.7.4
+huggingface-hub==0.16.4
+# Utilities
+python-dotenv==1.0.0
+numpy==1.24.3
+pandas==2.0.3
+tqdm==4.66.1
+
+# Additional dependencies
+pydantic==2.5.0
+requests==2.31.0

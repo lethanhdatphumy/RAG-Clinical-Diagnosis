@@ -1,0 +1,6 @@
+outs:
+- md5: 65cb86eba3db64f3d59ad887a5f2fe85.dir
+  size: 455294
+  nfiles: 100
+  hash: md5
+  path: filtered
