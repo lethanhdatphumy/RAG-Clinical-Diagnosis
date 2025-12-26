@@ -110,7 +110,7 @@ aws configure
 # Pull data from S3
 dvc pull
 ```
-
+![img_1.png](img_1.png)
 This downloads:
 - 100+ processed clinical case reports
 - Pre-built FAISS vector index
