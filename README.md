@@ -110,7 +110,9 @@ aws configure
 # Pull data from S3
 dvc pull
 ```
-![img_1.png](img_1.png)
+
+![DVC Pull Results](images/img_1.png)
+
 This downloads:
 - 100+ processed clinical case reports
 - Pre-built FAISS vector index
@@ -138,12 +140,12 @@ python tests/evaluate_rag.py
 ```
 
 **Output:**
+
+![Evaluation Metrics](images/img.png)
 ```
 Diagnosis Accuracy: 14/14 = 100%
 Keyword Match: 73.10%
 Precision@5: 61.90%
-
-Metrics saved to img.png
 ```
 
 ## Data Versioning with DVC
