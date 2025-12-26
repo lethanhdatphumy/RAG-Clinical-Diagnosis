@@ -139,14 +139,7 @@ docs/_build/
 *.backup
 *~
 
-# Image files (if generated during processing)
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.tiff
-*.svg
+
 
 # Audio/video files
 *.mp3
