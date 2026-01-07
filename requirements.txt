@@ -12,8 +12,8 @@ langchain-community==0.0.13
 langchain-google-genai==0.0.5
 langchain-core==0.1.10
 
-# Embeddings & Transformers (Compatible with Python 3.9)
-sentence-transformers==2.2.2
+# Embeddings & Transformers (Compatible with Python 3.11)
+sentence-transformers
 transformers==4.30.0
 torch==2.0.1
 tokenizers==0.13.3
