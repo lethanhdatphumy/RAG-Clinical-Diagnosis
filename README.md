@@ -84,6 +84,59 @@ Tropical and infectious diseases often require timely and accurate diagnosis. Th
      python main.py --stage query --question "Patient with fever and malaria symptoms..."
      ```
 
+### Docker Deployment
+
+#### Prerequisites for Docker
+- Docker installed and running
+- Docker Compose (optional, for advanced setups)
+
+#### Build and Run with Docker
+
+1. **Build the Docker Image**:
+   ```bash
+   docker build -t clinical-rag:latest .
+   ```
+
+2. **Run the Container**:
+   ```bash
+   docker run -p 8501:8501 \
+     -e GOOGLE_API_KEY=your-gemini-api-key \
+     -e AWS_ACCESS_KEY_ID=your-aws-key \
+     -e AWS_SECRET_ACCESS_KEY=your-aws-secret \
+     clinical-rag:latest
+   ```
+
+3. **Access the Application**:
+   Open your browser and navigate to `http://localhost:8501`
+
+#### Advanced Docker Options
+
+**Run with Volume Mounting** (for local data access):
+```bash
+docker run -p 8501:8501 \
+  -v $(pwd)/data:/Clinical/data \
+  -e GOOGLE_API_KEY=your-gemini-api-key \
+  clinical-rag:latest
+```
+
+**Run in Detached Mode** (background process):
+```bash
+docker run -d -p 8501:8501 \
+  --name clinical-rag \
+  -e GOOGLE_API_KEY=your-gemini-api-key \
+  clinical-rag:latest
+```
+
+**View Container Logs**:
+```bash
+docker logs clinical-rag
+```
+
+**Stop the Container**:
+```bash
+docker stop clinical-rag
+```
+
 ## Project Structure
 
 ```text
