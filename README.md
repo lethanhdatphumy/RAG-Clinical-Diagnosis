@@ -21,7 +21,6 @@ Tropical and infectious diseases often require timely and accurate diagnosis. Th
 
 ## Performance Highlights
 
-- **Diagnosis Accuracy**: 100% on test cases.
 - **Keyword Match**: 73.10%.
 - **Precision@5**: 61.90%.
 
