@@ -49,8 +49,7 @@ We have developed fine-tuned language models optimized for clinical diagnosis of
 ### Access Fine-Tuned Models
 
 The fine-tuned models are available in the following Google Drive folder:
-
-📁 **Models Repository**: [Fine-Tuned Models](https://drive.google.com/drive/folders/1TUMCgApLyINMNutzZ67lwYRDrLJ5ix2M)
+**Models Repository**: [Fine-Tuned Models](https://drive.google.com/drive/folders/1TUMCgApLyINMNutzZ67lwYRDrLJ5ix2M)
 
 ### Using the Fine-Tuned Models
 
