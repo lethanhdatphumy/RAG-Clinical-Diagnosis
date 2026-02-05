@@ -37,6 +37,38 @@ Tropical and infectious diseases often require timely and accurate diagnosis. Th
 | **Web Interface** | Streamlit                                |
 | **Evaluation**   | Custom metrics framework                 |
 
+## Fine-Tuned Models
+
+We have developed fine-tuned language models optimized for clinical diagnosis of tropical and infectious diseases. These models are stored in our Google Drive repository and can be accessed for improved diagnostic accuracy.
+
+### Available Models
+
+- **Gemma 2 9B (Fine-tuned)**: A specialized version of Google's Gemma 2 9B model fine-tuned on clinical case data for tropical disease diagnosis.
+- **Format**: GGUF (Quantized Q4_K_M) for efficient deployment and inference.
+
+### Access Fine-Tuned Models
+
+The fine-tuned models are available in the following Google Drive folder:
+
+📁 **Models Repository**: [Fine-Tuned Models](https://drive.google.com/drive/folders/1TUMCgApLyINMNutzZ67lwYRDrLJ5ix2M)
+
+### Using the Fine-Tuned Models
+
+1. **Download the Model**:
+   - Visit the [Google Drive folder](https://drive.google.com/drive/folders/1TUMCgApLyINMNutzZ67lwYRDrLJ5ix2M)
+   - Download the GGUF file and Modelfile
+
+2. **Integration**:
+   - The fine-tuned models can be loaded via Ollama or LM Studio for local inference
+   - Update configuration in `config/settings.py` to point to your local model
+
+3. **Performance Benefits**:
+   - Improved diagnostic accuracy on tropical disease cases
+   - Better contextual understanding of clinical presentations
+   - Reduced latency for inference when running locally
+
+**Note**: Fine-tuning was performed using LoRA (Low-Rank Adaptation) with the Unsloth framework for efficient training on clinical case data.
+
 ## Getting Started
 
 ### Prerequisites
