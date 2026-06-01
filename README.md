@@ -21,8 +21,34 @@ Tropical and infectious diseases often require timely and accurate diagnosis. Th
 
 ## Performance Highlights
 
-- **Keyword Match**: 73.10%.
-- **Precision@5**: 61.90%.
+### Baseline Performance (Gemma-4-26B without RAG)
+**Test Date**: June 1, 2026 | **Model**: models/gemma-4-26b-a4b-it
+- **Diagnosis Accuracy**: 53.33%
+- **Keyword Match Rate**: 83.33%
+- **Average Inference Time**: 11.41 seconds
+- **Error Rate**: 0.00% (15/15 successful tests)
+
+### RAG System Performance (Gemma-4-26B with RAG)
+**Test Date**: June 1, 2026 | **Model**: models/gemma-4-26b-a4b-it
+- **Diagnosis Accuracy**: 93.33% ⭐ (+40% improvement)
+- **Keyword Match Rate**: 76.67%
+- **Precision@5**: 62.22%
+- **Error Rate**: 0.00% (15/15 successful tests)
+- **Embedding Model**: all-MiniLM-L6-v2
+
+**Key Finding**: RAG system shows significant accuracy improvement of **40 percentage points** (from 53.33% to 93.33%) by providing contextual case examples for diagnosis support.
+
+### Detailed Performance Comparison
+
+| Metric | Baseline (No RAG) | RAG System | Improvement |
+|--------|-------------------|-----------|-------------|
+| **Diagnosis Accuracy** | 53.33% (8/15) | 93.33% (14/15) | **+40.00%** ⭐ |
+| **Keyword Match Rate** | 83.33% | 76.67% | -6.66% |
+| **Precision@5** | N/A | 62.22% | - |
+| **Test Success Rate** | 100% (15/15) | 100% (15/15) | Maintained |
+| **Error Rate** | 0% | 0% | Maintained |
+
+**Analysis**: The RAG system demonstrates exceptional performance improvement in diagnostic accuracy. By retrieving contextual case examples and incorporating them into the diagnosis reasoning process, the system achieves a 40 percentage point improvement over the baseline. This validates the core hypothesis that retrieval-augmented generation significantly enhances medical AI decision-making.
 
 ## Tech Stack
 
@@ -66,6 +92,96 @@ The fine-tuned models are available in the following Google Drive folder:
    - Reduced latency for inference when running locally
 
 **Note**: Fine-tuning was performed using LoRA (Low-Rank Adaptation) with the Unsloth framework for efficient training on clinical case data.
+
+## Baseline Performance Testing
+
+To evaluate the base Gemma model's diagnostic capability without RAG augmentation, we provide a comprehensive baseline performance test. This helps measure the improvement gained by using the RAG system.
+
+### Running the Baseline Test
+
+```bash
+# Run the baseline performance evaluation
+python tests/test_gemma_baseline.py
+```
+
+### What the Baseline Test Does
+
+The baseline test (`tests/test_gemma_baseline.py`) evaluates the Gemma model's ability to:
+- Diagnose 15 different tropical and infectious diseases
+- Generate relevant medical keywords and evidence
+- Provide diagnostic accuracy without retrieval-augmented generation
+
+### Metrics Evaluated
+
+- **Diagnosis Accuracy**: Percentage of correct primary diagnoses
+- **Keyword Match Rate**: Average percentage of expected medical keywords mentioned
+- **Inference Time**: Average response time per query
+- **Error Rate**: Number of failed queries
+
+### Sample Ground Truth Test Cases
+
+The baseline test includes diverse clinical presentations:
+- Hemorrhagic diseases (Ebola, Dengue, Yellow Fever)
+- Parasitic infections (Malaria, Leishmaniasis, Schistosomiasis)
+- Bacterial infections (Tuberculosis, Typhoid, Meningitis)
+- Viral infections (HIV, Zika, Chikungunya)
+- Helminth infections (Strongyloidiasis)
+
+### Comparing Baseline vs RAG Performance
+
+After running the baseline test, compare the results with the RAG system performance:
+
+```bash
+# Run the comparison script - it will prompt you to run RAG test too
+python tests/run_performance_tests.py
+
+# Or test the RAG system separately
+python tests/evaluate_rag.py
+
+# Compare metrics:
+# - Baseline accuracy vs RAG accuracy
+# - Baseline keyword match vs RAG keyword match  
+# - Impact of retrieval-augmented generation
+```
+
+This comparison demonstrates the value of including contextual case reports in the diagnosis generation process.
+
+### Test Results & Evaluation
+
+The performance metrics above were obtained from comprehensive testing on 15 diverse tropical disease cases:
+
+**Baseline Test Results**:
+- File: `tests/results/baseline_gemma_20260601_121422.json`
+- Date: June 1, 2026
+- Test Cases: 15 (Hemorrhagic fevers, Parasitic diseases, Bacterial infections, Viral infections)
+
+**RAG System Test Results**:
+- File: `tests/results/rag_system_20260601_123213.json`
+- Date: June 1, 2026
+- Test Cases: 15 (Same disease categories for fair comparison)
+
+**Evaluation Metrics**:
+- Diagnosis Accuracy: Percentage of correct primary diagnoses
+- Keyword Match: Percentage of expected medical terminology present
+- Precision@5: Relevance of top-5 retrieved case examples
+- Test Success Rate: Percentage of tests completed without errors
+
+### Running Tests
+
+To evaluate the system:
+
+```bash
+# Run baseline test (without RAG)
+python tests/test_gemma_baseline.py
+
+# Run RAG system evaluation
+python tests/evaluate_rag.py
+
+# Run full comparison
+python tests/run_performance_tests.py
+```
+
+Results are automatically saved to `tests/results/` with timestamps for tracking performance over time.
 
 ## Getting Started
 

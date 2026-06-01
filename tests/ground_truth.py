@@ -2,7 +2,6 @@
 "expected_diagnosis": The disease name (string)
 "expected_keywords": List of medical terms that should appear (list)
 """
-from generation.rag_generator import ClinicalRAG
 
 GROUND_TRUTH = [
     {
@@ -82,19 +81,3 @@ GROUND_TRUTH = [
     }
 ]
 
-test_rag = ClinicalRAG()
-
-for i, query in enumerate(GROUND_TRUTH):
-    print(f"\n{'=' * 80}")
-    print(f"TESTING {i}")
-    print(f"\n{'=' * 80}")
-
-    test_result = test_rag.query(query['query'])
-
-    print(f"\nDIAGNOSIS:")
-    print(test_result['result'])
-    print("...\n")
-    for j, doc in enumerate(test_result['source_documents'],
-                            1):  # 1 is the starting number for enumeration (default = 0).
-        print(f"\n{i}. {doc.metadata['case_id']}")
-        print(f"   {doc.page_content}...")

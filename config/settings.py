@@ -9,7 +9,7 @@ class Config:
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
     # Use the latest model
-    GEMINI_MODEL = "models/gemma-3-27b-it"  # Fast and free
+    GEMINI_MODEL = "models/gemma-4-26b-a4b-it"  # Fast and free
 
     # GEMINI_MODEL = "gemini-2.5-pro"  # More powerful but has rate limits
 
