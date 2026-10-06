@@ -1,0 +1,31 @@
+[project]
+name = "clinical"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "faiss-cpu==1.7.4",
+    "fastapi>=0.125.0",
+    "google-ai-generativelanguage==0.4.0",
+    "google-generativeai==0.3.2",
+    "huggingface-hub==0.16.4",
+    "langchain==0.1.0",
+    "langchain-community==0.0.13",
+    "langchain-core==0.1.10",
+    "langchain-google-genai==0.0.5",
+    "numpy>=1.26,<2.0",
+    "pandas==2.0.3",
+    "pillow==10.0.0",
+    "pydantic>=2.5.0,<2.7.4",
+    "pymupdf==1.23.8",
+    "python-dotenv==1.0.0",
+    "qdrant-client>=1.9.0,<1.13.0",
+    "requests==2.31.0",
+    "sentence-transformers>=2.2.2",
+    "streamlit",
+    "tokenizers==0.13.3",
+    "torch==2.0.1",
+    "tqdm==4.66.1",
+    "transformers==4.30.0",
+]
