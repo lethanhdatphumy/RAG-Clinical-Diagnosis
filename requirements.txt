@@ -20,16 +20,17 @@ tokenizers==0.13.3
 
 # Vector Store
 faiss-cpu==1.7.4
+qdrant-client>=1.9.0,<1.13.0
 huggingface-hub==0.16.4
+
 # Utilities
 python-dotenv==1.0.0
-numpy==1.24.3
+numpy>=1.26,<2.0
 pandas==2.0.3
 tqdm==4.66.1
 
 # Additional dependencies
-pydantic==2.5.0
+pydantic>=2.5.0,<2.7.4
 requests==2.31.0
 fastapi
 streamlit
-
