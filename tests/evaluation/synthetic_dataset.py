@@ -18,6 +18,7 @@ import argparse
 import json
 import logging
 import random
+import time
 from pathlib import Path
 
 import google.generativeai as genai
@@ -83,15 +84,29 @@ Case details:
 
 Return ONLY the query string. No quotes, no explanation."""
 
-    def generate_query_for_case(self, case: dict) -> str:
+    def generate_query_for_case(self, case: dict, max_retries: int = 3) -> str:
         prompt = self._build_query_prompt(case)
-        try:
-            response = self.llm.generate_content(prompt)
-            return response.text.strip()
-        except Exception as exc:
-            logger.warning("Query generation failed for %s: %s", case.get("case_id"), exc)
-            symptoms = ", ".join(case.get("symptoms", [])[:4])
-            return f"Patient with {symptoms}"
+        for attempt in range(1, max_retries + 1):
+            try:
+                response = self.llm.generate_content(prompt)
+                # Handle both simple text and multi-part responses
+                if response.parts:
+                    return "".join(part.text for part in response.parts if hasattr(part, "text")).strip()
+                return response.text.strip()
+            except Exception as exc:
+                wait = 2 ** attempt  # 2s, 4s, 8s
+                if attempt < max_retries:
+                    logger.warning(
+                        "Attempt %d/%d failed for %s (%s) — retrying in %ds…",
+                        attempt, max_retries, case.get("case_id"), exc, wait,
+                    )
+                    time.sleep(wait)
+                else:
+                    logger.warning(
+                        "All retries failed for %s: %s — using fallback query.",
+                        case.get("case_id"), exc,
+                    )
+        return self._fallback_query(case)
 
     # ── Relevance labelling ──────────────────────────────────────────────────
 
@@ -125,10 +140,35 @@ Return ONLY the query string. No quotes, no explanation."""
 
     # ── Dataset assembly ─────────────────────────────────────────────────────
 
+    # ── Non-clinical case detection ───────────────────────────────────────────
+
+    _METADATA_PREFIXES = ("foreword", "copyright", "index", "preface", "contents", "acknowledgement")
+
+    def _is_clinical_case(self, case: dict) -> bool:
+        """Return False for book metadata pages (Foreword, Copyright, etc.)."""
+        case_id = case.get("case_id", "").lower()
+        has_symptoms = bool(case.get("symptoms"))
+        has_history = bool(case.get("patient_history", "").strip())
+        is_metadata = any(case_id.startswith(p) for p in self._METADATA_PREFIXES)
+        return (has_symptoms or has_history) and not is_metadata
+
+    def _fallback_query(self, case: dict) -> str:
+        """Build a simple query from symptoms when Gemini is skipped."""
+        symptoms = ", ".join(case.get("symptoms", [])[:4])
+        diseases = ", ".join(case.get("diseases", [])[:2])
+        history = case.get("patient_history", "")[:100].strip()
+        if history:
+            return history
+        if symptoms:
+            return f"Patient with {symptoms}"
+        return f"Case related to {diseases}" if diseases else "Unspecified clinical case"
+
+    # ── Dataset assembly ──────────────────────────────────────────────────────
+
     def generate(self, max_cases: int | None = None) -> list[dict]:
         """
-        Generate one evaluation sample per case (or up to max_cases).
-        Returns a list of evaluation samples.
+        Generate one evaluation sample for all 100 cases.
+        Clinical cases get a Gemini-generated query; metadata pages use a fallback.
         """
         cases = self.load_cases()
         rng = random.Random(SEED)
@@ -138,9 +178,19 @@ Return ONLY the query string. No quotes, no explanation."""
 
         samples = []
         for i, case in enumerate(cases):
-            logger.info("[%d/%d] Generating query for: %s", i + 1, len(cases), case["case_id"])
+            is_clinical = self._is_clinical_case(case)
+            logger.info(
+                "[%d/%d] %s: %s",
+                i + 1, len(cases),
+                "Generating query" if is_clinical else "Fallback query (metadata page)",
+                case["case_id"],
+            )
 
-            query = self.generate_query_for_case(case)
+            if is_clinical:
+                query = self.generate_query_for_case(case)
+                time.sleep(2)   # avoid Gemini rate limiting between requests
+            else:
+                query = self._fallback_query(case)
             relevant_ids = self._find_relevant_cases(case, cases)
             irrelevant_ids = self._sample_irrelevant_cases(cases, relevant_ids, rng)
 
@@ -148,6 +198,7 @@ Return ONLY the query string. No quotes, no explanation."""
                 "sample_id": f"syn_{i+1:03d}",
                 "source_case_id": case["case_id"],
                 "query": query,
+                "is_clinical": is_clinical,
                 "primary_diseases": case.get("diseases", [])[:5],
                 "relevant_case_ids": relevant_ids,
                 "irrelevant_case_ids": irrelevant_ids,

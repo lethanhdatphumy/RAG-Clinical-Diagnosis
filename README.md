@@ -107,12 +107,18 @@ EMBEDDING_BATCH_SIZE=32                  # optional
 
 ## Fine-Tuned Models
 
-We have developed fine-tuned language models optimized for clinical diagnosis of tropical and infectious diseases.
+Fine-tuned and instruction-tuned models served locally via Ollama (GGUF format) for clinical diagnosis of tropical and infectious diseases.
 
 ### Available Models
 
-- **Gemma 2 9B (Fine-tuned)**: A specialized version of Google's Gemma 2 9B model fine-tuned on clinical case data for tropical disease diagnosis.
-- **Format**: GGUF (Quantized Q4_K_M) for efficient deployment and inference.
+| Model | Base | Format |
+|-------|------|--------|
+| **updated-Gemma-2-9b-lt-GGUF** | Gemma 2 9B | GGUF Q4_K_M |
+| **Llama-3.1-8B-Instruct.Q4_K_M** | Llama 3.1 8B | GGUF Q4_K_M |
+| **Qwen3-8B-GGUF** | Qwen3 8B | GGUF |
+| **Qwen2.5-7B-Instruct-GGUF** | Qwen2.5 7B | GGUF |
+
+All models run locally via Ollama — no external API calls required during inference.
 
 ### Access Fine-Tuned Models
 
@@ -223,14 +229,82 @@ clinical-diagnosis-rag/
 
 ## Evaluation
 
+The evaluation stack has three layers, each testing a different part of the system.
+
+### Layer 1 — Retrieval Quality (Chunking Evaluator)
+
+Tests whether Qdrant retrieves clinically similar cases when queried with symptoms — without involving the LLM generator at all.
+
+**How it works:**
+1. A synthetic dataset of 100 labelled query → relevant_cases triples is generated using Gemini (`tests/evaluation/synthetic_dataset.py`). Each query is written like a physician searching by symptoms, without naming the disease directly.
+2. Each query is embedded and searched against Qdrant at top-K.
+3. Retrieved `case_id`s are compared against the ground-truth `relevant_case_ids` (cases sharing at least one disease label).
+
+**How relevance is defined:**
+
+A case is marked relevant if it shares at least one disease label with the source case. For example, if the source case has `diseases = ["malaria", "anaemia"]`, any other case containing "malaria" or "anaemia" is relevant. This is weak labelling — automated, not human-verified — and good enough for a retrieval benchmark.
+
+**Metrics explained with a concrete example:**
+
+Say the query is about a malaria patient. There are 8 relevant cases in the database. Qdrant returns these 5:
+
+```
+Rank 1: Case_A  ✓ relevant
+Rank 2: Case_X  ✗ wrong
+Rank 3: Case_B  ✓ relevant
+Rank 4: Case_Y  ✗ wrong
+Rank 5: Case_Z  ✗ wrong
+```
+
+| Metric | Calculation | Result | What it means |
+|--------|------------|--------|---------------|
+| **Precision@5** | 2 correct / 5 returned | 0.40 | 40% of shown results were useful |
+| **Recall@5** | 2 found / 8 total relevant | 0.25 | Missed 6 relevant cases entirely |
+| **MRR** | 1st hit at rank 1 → 1/1 | 1.00 | First result was already correct |
+| **Hit@5** | Case_A found → yes | 1 | At least one correct result exists |
+
+MRR and Hit@K score higher than Precision and Recall because they only need **one correct result** — they don't penalize for missing the others. Precision and Recall count every slot.
+
+For a clinical support tool, **MRR and Hit@K matter most** — a physician needs at least one relevant case near the top, not exhaustive coverage.
+
+**Results @ K=5 (100 synthetic queries, `all-MiniLM-L6-v2` embeddings, Qdrant cosine similarity):**
+
+| Metric | Overall | Clinical cases (n=93) | Metadata pages (n=7) |
+|--------|---------|----------------------|----------------------|
+| Precision@5 | 0.504 | 0.536 | 0.086 |
+| Recall@5 | 0.149 | 0.159 | 0.025 |
+| MRR | 0.885 | 0.936 | 0.214 |
+| Hit Rate@5 | 0.930 | 0.978 | 0.286 |
+
+The low Recall@5 is expected — a disease like malaria may have 15+ matching cases in the corpus, and retrieving only 5 limits coverage by design. The MRR of 0.885 confirms the most relevant case surfaces at rank 1 or 2 in nearly every query.
+
 ```bash
-# Baseline (without RAG)
-python tests/test_gemma_baseline.py
+# Run retrieval evaluation (default K=5)
+python -m tests.evaluation.chunk_evaluator --k 5 --save
 
-# RAG system evaluation
+# Try higher K to see recall improve
+python -m tests.evaluation.chunk_evaluator --k 10 --save
+```
+
+### Layer 2 — End-to-End RAG Quality
+
+Tests whether the full pipeline (retrieve + generate) produces the correct diagnosis.
+
+```bash
 python tests/evaluate_rag.py
+```
 
-# Full comparison
+### Layer 3 — Baseline (No RAG)
+
+Tests Gemini alone without any retrieved context, as a performance baseline.
+
+```bash
+python tests/test_gemma_baseline.py
+```
+
+### Full Comparison
+
+```bash
 python tests/run_performance_tests.py
 ```
 
@@ -245,6 +319,8 @@ Results are saved to `tests/results/` with timestamps.
 - [x] `QdrantUploader` class with batched upsert
 - [x] Fine-tuned Gemma 2 9B (LoRA + Unsloth)
 - [x] Docker containerization
+- [x] Synthetic evaluation dataset (100 labelled query/relevant/irrelevant triples)
+- [x] Chunking evaluator — Precision@K, Recall@K, MRR, Hit@K against Qdrant
 
 ### In Progress
 - [ ] **LangGraph agentic routing** — a router agent that decides whether to use RAG (for specific patient cases) or the fine-tuned LLM (for general disease knowledge questions)
