@@ -310,6 +310,62 @@ python tests/run_performance_tests.py
 
 Results are saved to `tests/results/` with timestamps.
 
+## Agentic RAG Architecture (In Progress)
+
+The next version of the system replaces the single RAG chain with a multi-layer LangGraph pipeline that routes each query to the most appropriate path.
+
+```mermaid
+flowchart TD
+    A([User Query]) --> B[Adaptive Router]
+
+    B -->|General disease knowledge| C[Fine-tuned LLM\nOllama]
+    C --> Z([Answer])
+
+    B -->|Specific patient / case lookup| D[Specificity Grader]
+
+    D -->|Specific enough| E[Hybrid RAG\nDense Qdrant + Sparse BM25\nRRF Merge]
+    E --> F[Generate]
+    F --> Z
+
+    D -->|Too vague| G[Autonomous Enrichment Agent]
+    G --> G1[Web Search\nOutbreaks / Travel advisories]
+    G --> G2[Infer missing context\nfrom symptom patterns]
+    G1 & G2 --> H[Enriched Query]
+
+    H --> E2[Hybrid RAG\nDense Qdrant + Sparse BM25\nRRF Merge]
+    E2 --> I[Answer Grader]
+    I -->|Relevant| Z
+    I -->|Not relevant| C
+```
+
+**Data Pipeline:**
+
+```mermaid
+flowchart LR
+    A[Raw PDFs] --> B[PDF Extraction\nText + Images]
+    B --> C[Gemini Filtering\nStructured Entities]
+    C --> D[Embed\nall-MiniLM-L6-v2]
+    D --> E[(Qdrant Cloud\n100 cases · 384-dim)]
+```
+
+**Evaluation Pipeline:**
+
+```mermaid
+flowchart LR
+    A[Filtered Cases] --> B[Synthetic Dataset\n100 labelled triples]
+    A --> C[Pipeline Eval Dataset\n93 cases × 3 query types]
+    B --> D[Chunk Evaluator\nPrecision · Recall · MRR · Hit@K]
+    C --> E[Pipeline Evaluator\nLLM vs Full Pipeline]
+    D & E --> F[(tests/results/)]
+```
+
+**Key design decisions:**
+- **Adaptive routing** — avoids unnecessary retrieval for general knowledge questions; routes directly to the fine-tuned LLM
+- **Hybrid RAG** — combines dense semantic search (Qdrant) with sparse keyword search (BM25) and merges results using Reciprocal Rank Fusion (RRF) for better coverage
+- **Agentic enrichment** — when a query is too vague (few symptoms, no demographics or travel context), the agent autonomously performs web searches and infers context before retrieval
+- **Fully autonomous** — no follow-up questions to the user; all enrichment happens silently in the pipeline
+- **Transparent output** — the final answer includes which path was taken and any assumptions made during enrichment
+
 ## Roadmap
 
 ### Completed
@@ -323,10 +379,11 @@ Results are saved to `tests/results/` with timestamps.
 - [x] Chunking evaluator — Precision@K, Recall@K, MRR, Hit@K against Qdrant
 
 ### In Progress
-- [ ] **LangGraph agentic routing** — a router agent that decides whether to use RAG (for specific patient cases) or the fine-tuned LLM (for general disease knowledge questions)
+- [ ] **Adaptive + Hybrid + Agentic RAG pipeline** (LangGraph) — see architecture below
 
 ### Planned
-- [ ] Deploy to cloud (Google Cloud Run / AWS Lambda)
+- [ ] Deploy RAG pipeline to cloud (AWS / Google Cloud Run)
+- [ ] Deploy fine-tuned LLMs to **Hugging Face Spaces (ZeroGPU)** — free GPU inference, called from pipeline via API
 - [ ] Differential diagnosis (top-3 predictions)
 - [ ] Multi-language support
 - [ ] Fine-tune embeddings on medical corpus
