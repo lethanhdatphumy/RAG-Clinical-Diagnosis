@@ -1,4 +1,4 @@
 [core]
-    remote = storage
-['remote "storage"']
-    url = s3://datdvcs3bucket/clinical-rag
+    remote = gdrive
+['remote "gdrive"']
+    url = gdrive://1Z-ys5wnwMrTDOmHueaEgIMnACw5awjF1
