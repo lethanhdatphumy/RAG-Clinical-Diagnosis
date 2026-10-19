@@ -3,16 +3,25 @@ pymupdf==1.23.8
 Pillow==10.0.0
 
 # Google Gemini API
-google-generativeai
-google-ai-generativelanguage
+google-genai==2.31.0
+google-generativeai==0.3.2
+google-ai-generativelanguage==0.4.0
 
-# LangChain
-langchain==1.3.0
-langchain-community==0.0.13
-langchain-core==1.6.10
-langchain-google-genai==3.0.0rc1
-# Embeddings & Transformers (Compatible with Python 3.11)
-sentence-transformers
+# LangChain + LangGraph
+langchain==1.4.6
+langchain-classic==1.0.8
+langchain-community==0.4.2
+langchain-core==1.6.12
+langchain-google-genai==4.4.2
+langchain-protocol==0.0.19
+langchain-text-splitters==1.1.3
+langgraph==1.2.16
+langgraph-checkpoint==4.3.0
+langgraph-prebuilt==1.1.1
+langgraph-sdk==0.4.8
+
+# Embeddings & Transformers
+sentence-transformers==2.2.2
 transformers==4.30.0
 torch==2.0.1
 tokenizers==0.13.3
@@ -20,16 +29,29 @@ tokenizers==0.13.3
 # Vector Store
 faiss-cpu==1.7.4
 qdrant-client>=1.9.0,<1.13.0
-huggingface-hub==0.16.4
+
+# Hybrid Retrieval
+rank-bm25==0.2.2
+
+# Agentic Web Search
+duckduckgo-search==8.1.1
 
 # Utilities
-python-dotenv==1.0.0
+python-dotenv==1.2.4
 numpy>=1.26,<2.0
 pandas==2.0.3
 tqdm==4.66.1
+requests==2.34.2
+orjson==3.13.0
+distro==1.9.0
 
-# Additional dependencies
-pydantic>=2.5.0,<2.7.4
-requests==2.31.0
+# Pydantic
+pydantic==2.14.1
+pydantic-settings==2.16.0
+
+# HuggingFace
+huggingface-hub==0.16.4
+
+# API / UI
 fastapi
 streamlit

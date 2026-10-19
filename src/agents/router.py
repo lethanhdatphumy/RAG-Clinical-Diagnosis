@@ -1,6 +1,6 @@
 import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from config.settings import Config
 from src.agents.state import AgentState
 
@@ -46,11 +46,15 @@ def router_node(state: AgentState) -> AgentState:
             model=Config.GEMINI_MODEL,
             google_api_key=Config.GOOGLE_API_KEY,
             temperature=0.0,
-            max_output_tokens=64,
+            max_output_tokens=512,
         )
         prompt_text = _ROUTER_PROMPT.format(query=query)
         response = llm.invoke(prompt_text)
-        raw = response.content.strip()
+        content = response.content
+        if isinstance(content, list):
+            text_parts = [p.get("text", "") for p in content if p.get("type") == "text"]
+            content = text_parts[0] if text_parts else ""
+        raw = content.strip()
         logger.info("Router raw response: %s", raw)
 
         route, reasoning = _parse_router_response(raw)
