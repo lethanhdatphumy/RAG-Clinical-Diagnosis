@@ -32,7 +32,13 @@ class Config:
     # Retrieval Settings
     TOP_K_RETRIEVAL = 3  # Number of top similar cases to retrieve
 
-    # Fine-tuned model (served locally via Ollama)
+    # Fine-tuned model — HuggingFace ZeroGPU Space (preferred) or local Ollama (fallback)
+    # Set HF_INFERENCE_URL to your deployed HF Space endpoint, e.g.:
+    #   https://<your-username>-clinical-llm.hf.space
+    HF_INFERENCE_URL = os.getenv("HF_INFERENCE_URL", "")          # empty = use Ollama
+    HF_INFERENCE_TIMEOUT = int(os.getenv("HF_INFERENCE_TIMEOUT", "120"))
+
+    # Local Ollama fallback
     OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     FINETUNED_MODEL_NAME = os.getenv("FINETUNED_MODEL_NAME", "gemma2-clinical:q4_k_m")
     OLLAMA_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "120"))
