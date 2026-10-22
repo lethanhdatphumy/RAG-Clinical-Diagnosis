@@ -83,7 +83,7 @@ def health():
     finetuned_status = "ok"
     try:
         if Config.HF_INFERENCE_URL:
-            url = f"{Config.HF_INFERENCE_URL.rstrip('/')}/info"
+            url = f"{Config.HF_INFERENCE_URL.rstrip('/')}/gradio_api/info"
             resp = requests.get(url, timeout=5)
             resp.raise_for_status()
             finetuned_status = f"hf-space: {Config.HF_INFERENCE_URL}"

@@ -5,10 +5,13 @@ Tries endpoints in order:
   1. HuggingFace ZeroGPU Space  — if HF_INFERENCE_URL is set in .env
   2. Local Ollama                — fallback for local development
 
-HF Space contract (Gradio built-in REST API):
-  POST {HF_INFERENCE_URL}/run/predict
-  Request : {"data": [prompt, max_tokens, temperature], "fn_index": 0}
-  Response: {"data": ["generated text"]}
+HF Space contract (Gradio 6.x API):
+  POST {HF_INFERENCE_URL}/gradio_api/call/generate
+  Body   : {"data": [prompt, max_tokens, temperature]}
+  → {"event_id": "..."}
+
+  GET {HF_INFERENCE_URL}/gradio_api/call/generate/{event_id}
+  → SSE stream; parse the line starting with "data:" on the "complete" event
 """
 
 import logging
@@ -30,16 +33,37 @@ Answer:"""
 
 
 def _call_hf_space(prompt: str) -> str:
-    """Call the HuggingFace ZeroGPU Space via Gradio's built-in /run/predict endpoint."""
-    url = f"{Config.HF_INFERENCE_URL.rstrip('/')}/run/predict"
-    response = requests.post(
-        url,
-        json={"data": [prompt, 512, 0.7], "fn_index": 0},
-        timeout=Config.HF_INFERENCE_TIMEOUT,
+    """Call the HuggingFace ZeroGPU Space via Gradio 6.x two-step SSE API."""
+    base = Config.HF_INFERENCE_URL.rstrip("/")
+
+    # Step 1: submit
+    submit = requests.post(
+        f"{base}/gradio_api/call/generate",
+        json={"data": [prompt, 512, 0.7]},
+        timeout=30,
     )
-    response.raise_for_status()
-    data = response.json().get("data", [])
-    return data[0].strip() if data else ""
+    submit.raise_for_status()
+    event_id = submit.json()["event_id"]
+
+    # Step 2: stream result
+    with requests.get(
+        f"{base}/gradio_api/call/generate/{event_id}",
+        stream=True,
+        timeout=Config.HF_INFERENCE_TIMEOUT,
+    ) as stream:
+        stream.raise_for_status()
+        for raw in stream.iter_lines():
+            line = raw.decode() if isinstance(raw, bytes) else raw
+            if line.startswith("data:"):
+                payload = line[5:].strip()
+                try:
+                    import json
+                    parsed = json.loads(payload)
+                    if isinstance(parsed, list) and parsed:
+                        return str(parsed[0]).strip()
+                except Exception:
+                    pass
+    return ""
 
 
 def _call_ollama(prompt: str) -> str:

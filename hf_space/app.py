@@ -15,7 +15,7 @@ import spaces
 import gradio as gr
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-MODEL_ID = os.getenv("MODEL_ID", "google/gemma-2-2b-it")
+MODEL_ID = os.getenv("MODEL_ID", "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
 
 _tokenizer: AutoTokenizer | None = None
 _model: AutoModelForCausalLM | None = None
