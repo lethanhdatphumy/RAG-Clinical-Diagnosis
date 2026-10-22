@@ -5,9 +5,10 @@ Tries endpoints in order:
   1. HuggingFace ZeroGPU Space  — if HF_INFERENCE_URL is set in .env
   2. Local Ollama                — fallback for local development
 
-HF Space contract (POST {HF_INFERENCE_URL}/generate):
-  Request : {"prompt": str, "max_tokens": int, "temperature": float}
-  Response: {"generated_text": str}
+HF Space contract (Gradio built-in REST API):
+  POST {HF_INFERENCE_URL}/run/predict
+  Request : {"data": [prompt, max_tokens, temperature], "fn_index": 0}
+  Response: {"data": ["generated text"]}
 """
 
 import logging
@@ -29,15 +30,16 @@ Answer:"""
 
 
 def _call_hf_space(prompt: str) -> str:
-    """Call the HuggingFace ZeroGPU Space endpoint."""
-    url = f"{Config.HF_INFERENCE_URL.rstrip('/')}/generate"
+    """Call the HuggingFace ZeroGPU Space via Gradio's built-in /run/predict endpoint."""
+    url = f"{Config.HF_INFERENCE_URL.rstrip('/')}/run/predict"
     response = requests.post(
         url,
-        json={"prompt": prompt, "max_tokens": 512, "temperature": 0.7},
+        json={"data": [prompt, 512, 0.7], "fn_index": 0},
         timeout=Config.HF_INFERENCE_TIMEOUT,
     )
     response.raise_for_status()
-    return response.json().get("generated_text", "").strip()
+    data = response.json().get("data", [])
+    return data[0].strip() if data else ""
 
 
 def _call_ollama(prompt: str) -> str:
