@@ -1,52 +1,45 @@
 """
-Clinical LLM — HuggingFace ZeroGPU Space
+Clinical LLM (phimed) — HuggingFace ZeroGPU Space
 
-Exposes Gradio's built-in REST API:
-  POST /run/predict  — {"data": [prompt, max_tokens, temperature], "fn_index": 0}
-                       → {"data": ["generated text"]}
+Loads the fine-tuned phimed GGUF model via llama-cpp-python.
 
-Set MODEL_ID in Space Secrets to your fine-tuned model repo.
-Default: google/gemma-2-2b-it
+Gradio API endpoint (auto-generated):
+  POST /gradio_api/call/generate
+  Body: {"data": [prompt, max_tokens, temperature]}
 """
 
 import os
-import torch
 import spaces
 import gradio as gr
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import hf_hub_download
+from llama_cpp import Llama
 
-MODEL_ID = os.getenv("MODEL_ID", "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
+REPO_ID  = os.getenv("MODEL_REPO",  "lethanhdatphumy/phimed-clinical-gguf")
+FILENAME = os.getenv("MODEL_FILE",  "phimed-Q4_K_M.gguf")
+N_CTX    = int(os.getenv("N_CTX",  "4096"))
+N_GPU    = int(os.getenv("N_GPU_LAYERS", "35"))   # layers to offload to GPU
 
-_tokenizer: AutoTokenizer | None = None
-_model: AutoModelForCausalLM | None = None
+_llm: Llama | None = None
 
 
 def _load():
-    global _tokenizer, _model
-    if _model is None:
-        _tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
-        _model = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-        )
-        _model.eval()
+    global _llm
+    if _llm is None:
+        path = hf_hub_download(repo_id=REPO_ID, filename=FILENAME)
+        _llm = Llama(model_path=path, n_ctx=N_CTX, n_gpu_layers=N_GPU, verbose=False)
 
 
 @spaces.GPU(duration=60)
 def generate(prompt: str, max_tokens: int, temperature: float) -> str:
     _load()
-    inputs = _tokenizer(prompt, return_tensors="pt").to(_model.device)
-    with torch.no_grad():
-        outputs = _model.generate(
-            **inputs,
-            max_new_tokens=max_tokens,
-            temperature=max(temperature, 1e-4),
-            do_sample=temperature > 0,
-            pad_token_id=_tokenizer.eos_token_id,
-        )
-    generated_ids = outputs[0][inputs.input_ids.shape[1]:]
-    return _tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
+    output = _llm(
+        prompt,
+        max_tokens=max_tokens,
+        temperature=max(temperature, 1e-4),
+        stop=["</s>", "Question:", "Human:"],
+        echo=False,
+    )
+    return output["choices"][0]["text"].strip()
 
 
 demo = gr.Interface(
@@ -57,8 +50,8 @@ demo = gr.Interface(
         gr.Slider(minimum=0.1, maximum=2.0, value=0.7, step=0.1, label="Temperature"),
     ],
     outputs=gr.Textbox(label="Generated text", lines=6),
-    title="Clinical LLM",
-    description=f"Fine-tuned clinical language model | Model: `{MODEL_ID}`",
+    title="Clinical LLM — phimed",
+    description=f"Fine-tuned clinical model | `{REPO_ID}`",
     api_name="generate",
 )
 

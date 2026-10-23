@@ -95,16 +95,25 @@ def finetuned_node(state: AgentState) -> AgentState:
     prompt = _PROMPT_TEMPLATE.format(query=query)
     use_hf = bool(Config.HF_INFERENCE_URL)
 
-    try:
-        if use_hf:
+    if use_hf:
+        try:
             logger.info("Fine-tuned node — using HF ZeroGPU Space: %s", Config.HF_INFERENCE_URL)
             answer = _call_hf_space(prompt)
             model_used = f"HF:{Config.HF_INFERENCE_URL}"
-        else:
-            logger.info("Fine-tuned node — using local Ollama: %s", Config.OLLAMA_BASE_URL)
-            answer = _call_ollama(prompt)
-            model_used = Config.FINETUNED_MODEL_NAME
+            return {
+                **state,
+                "answer": answer,
+                "source_documents": [],
+                "model_used": model_used,
+                "path_taken": path,
+            }
+        except Exception as exc:
+            logger.warning("Fine-tuned node error (HF Space): %s — falling back to Ollama", exc)
 
+    try:
+        logger.info("Fine-tuned node — using local Ollama: %s", Config.OLLAMA_BASE_URL)
+        answer = _call_ollama(prompt)
+        model_used = Config.FINETUNED_MODEL_NAME
         return {
             **state,
             "answer": answer,
@@ -112,22 +121,17 @@ def finetuned_node(state: AgentState) -> AgentState:
             "model_used": model_used,
             "path_taken": path,
         }
-
     except requests.exceptions.ConnectionError as exc:
-        if use_hf:
-            msg = f"HF Space unreachable at {Config.HF_INFERENCE_URL}: {exc}"
-        else:
-            msg = (
-                f"Fine-tuned model unreachable at {Config.OLLAMA_BASE_URL}. "
-                "Ensure Ollama is running: `ollama serve`."
-            )
+        msg = (
+            f"Fine-tuned model unreachable at {Config.OLLAMA_BASE_URL}. "
+            "Ensure Ollama is running: `ollama serve`."
+        )
         logger.error(msg)
         return {**state, "answer": None, "error": msg,
-                "model_used": Config.HF_INFERENCE_URL or Config.FINETUNED_MODEL_NAME,
+                "model_used": Config.FINETUNED_MODEL_NAME,
                 "path_taken": path}
-
     except Exception as exc:
         logger.error("Fine-tuned node error: %s", exc)
         return {**state, "answer": None, "error": str(exc),
-                "model_used": Config.HF_INFERENCE_URL or Config.FINETUNED_MODEL_NAME,
+                "model_used": Config.FINETUNED_MODEL_NAME,
                 "path_taken": path}
